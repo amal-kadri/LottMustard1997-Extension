@@ -1,0 +1,80 @@
+---
+title: "LottMustardReplication"
+author: "Amal Kadri"
+date: "2/16/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Read in libraries and data
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(rsample)
+library(lubridate)
+library(caret)
+library(modelr)
+library(parallel)
+library(foreach)
+library(readr)
+library(data.table)
+library(dplyr)
+library(tibble)
+library(zoo)
+library(knitr)
+library(magrittr)
+library(haven)
+
+lott = read_dta("~/Documents/Causal Inference/LottMustardExtension/data/Lott_Dataset.dta") #the lott data
+#original data sets
+statelevel = read_dta("~/Documents/Causal Inference/LottMustardExtension/data/UpdatedStateLevelData-2010.dta") 
+countylevel = read_dta("~/Documents/Causal Inference/LottMustardExtension/data/UpdatedCountyCrimeData-2010.dta")
+```
+
+Data Cleaning and Analysis
+```{r}
+countylevel = countylevel%>%
+  filter(year < 1993) %>%
+  arrange(desc(year))
+
+#verify that we filtered correctly
+unique(countylevel$year)
+
+#create an average murder rate (ratmur) per year for 1977 to 1992 and draw it in a time series using ggplot
+
+avgratmur = countylevel %>%
+  group_by(year) %>%
+  summarise(avgmur = mean(ratmur, na.rm = 1))
+
+avgmur = countylevel %>%
+  group_by(year) %>%
+  summarise(avgmur = mean(mur, na.rm = 1))
+
+ggplot(avgratmur) +
+  geom_line(aes(x = year, y = avgmur))
+
+ggplot() +
+  geom_line(aes(x = year, y = avgmur))
+```
+
